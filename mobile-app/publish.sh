@@ -14,10 +14,10 @@ cd ..
 # on CI push that changes to git
 if [[ -n "$CI" ]]; then
   echo "CI env... Committing updated template to git."
-  git config --global user.name 'CI Bot'
-  git config --global user.email 'barthap@users.noreply.github.com'
+  git config --global user.name "GitHub Action"
+  git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
   git add ./dist
-  git commit -m "[autocommit] Updated mobile-app template"
+  git commit -m "[autocommit] Updated mobile-app template" --author="github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
   git push
 fi 
 
