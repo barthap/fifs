@@ -7,8 +7,8 @@ expo export --public-url http://IP_TEMPLATE:8123 --dev
 # so they cannot be recognized directly by Expo Go
 echo "Preparing template files!"
 cd ./dist
-mv ios-index.json ios-index.template.json
-mv android-index.json android-index.template.json
+mv -f ios-index.json ios-index.template.json
+mv -f android-index.json android-index.template.json
 cd ..
 
 # on CI push that changes to git
