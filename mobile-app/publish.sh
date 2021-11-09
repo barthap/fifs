@@ -18,6 +18,7 @@ if [[ -n "$CI" ]]; then
   git config --global user.email 'barthap@users.noreply.github.com'
   git add ./dist
   git commit -m "[autocommit] Updated mobile-app template"
+  git push
 fi 
 
 echo "Publishing template done!"
