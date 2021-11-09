@@ -5,6 +5,13 @@ import socket
 from os.path import join
 import signal
 import sys
+import argparse
+
+parser = argparse.ArgumentParser(description='Runs Expo dev server on specific platform.')
+parser.add_argument('-p', '--platform', dest='platform',
+                    help='Target platform. Valid values: android or ios',
+                    choices=['android', 'ios'])
+args = parser.parse_args()
 
 
 def signal_handler(sig, frame):
@@ -45,7 +52,7 @@ class Handler(SimpleHTTPRequestHandler):
 
 httpd = HTTPServer(('', 8123), Handler)
 
-print("Generating app code for this computer")
+print("\nGenerating app code for this computer")
 ios_filename = join(DIRECTORY, 'ios-index.json')
 android_filename = join(DIRECTORY, 'android-index.json')
 # copy template files
@@ -56,11 +63,20 @@ replace_file_contents(ios_filename, 'IP_TEMPLATE', my_ip)
 replace_file_contents(android_filename, 'IP_TEMPLATE', my_ip)
 
 expo_addr = f"exp://{my_ip}:8123" 
+platform = args.platform
+if platform is None:
+  print("\nSelect your phone platform. You can use the --platform cmd line arg to skip this prompt.")
+  platform = input("Valid values are: 'android' and 'ios': ")
 
-qr = pyqrcode.create(expo_addr)
+if platform != 'android' and platform != 'ios':
+  raise Exception("Platform must be either android or ios! Quitting")
+
+print(f"\nGenerated QR code for platform: {platform}")
+qr = pyqrcode.create(f"{expo_addr}/{platform}-index.json", error='L')
 print(qr.terminal(quiet_zone=1))
 
-print(f"Expo listening on {expo_addr}. Press Ctrl+C to exit.")
+print(f"\nExpo listening on {expo_addr}. Press Ctrl+C to exit.")
 print("Install the 'Expo Go' app on your phone and scan the above QR code.")
+print("Your phone has to be in the same LAN network as this computer.")
 signal.signal(signal.SIGINT, signal_handler)
 httpd.serve_forever()
