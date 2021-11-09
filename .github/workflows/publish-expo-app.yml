@@ -1,0 +1,41 @@
+name: Publish Expo App
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/publish-expo-app.yml
+      - mobile-app/**
+
+# I wonder if it fails badly with git committing changes
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-18.04
+    env:
+      working-directory: ./mobile-app
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "14.17"
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+      - uses: actions/cache@v2
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('./mobile-app/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      - run: yarn install --frozen-lockfile
+        working-directory: ${{env.working-directory}}
+      - name: Run publish script
+        run: ./publish.sh
+        working-directory: ${{env.working-directory}}
+        env:
+          CI: 1
