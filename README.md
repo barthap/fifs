@@ -19,9 +19,9 @@ TODO
    pip install -r requirements.txt
    ```
 
-1. Install the **Expo Go** app ([Play Store link](), [App Store link]()) on your phone. It is like a launcher for our app. It allows us to run the mobile app through a QR code on both Android and iOS, without publishing it to app/stores or downloading `.apk`.
+1. Install the **Expo Go** app ([Play Store link](https://play.google.com/store/apps/details?id=host.exp.exponent), [App Store link](https://apps.apple.com/pl/app/expo-go/id982107779)) on your phone. It is like a launcher for our app. It allows us to run the mobile app through a QR code on both Android and iOS, without publishing it to app/stores or downloading `.apk`.
 
-1. Open terminal and start the `run_app.py` script, with `-p` or `--platform` argument:
+1. Open terminal (command line prompt) and start the `run_app.py` script, with `-p` or `--platform` argument:
 
    ```
    # For android
