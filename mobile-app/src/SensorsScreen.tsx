@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SensorData } from "./SensorData";
 
 const FAST_INTERVAL = 16;
 const SLOW_INTERVAL = 1000; //ms
@@ -24,23 +25,37 @@ function Separator() {
   );
 }
 
-export default class SensorsScreen extends React.Component {
+export default class SensorsScreen extends React.Component<{
+  onData?: (data: Partial<SensorData>) => void;
+}> {
   static navigationOptions = {
     title: "Sensors",
   };
 
+  updateGyroscope = (data: any) => this.props.onData?.({ gyroscope: data });
+  updateAccelerometer = (data: any) =>
+    this.props.onData?.({ accelerometer: data });
+  updateMagnetometer = (data: any) =>
+    this.props.onData?.({ magnetometer: data });
+  updateMagnetometerUncallibrated = (data: any) =>
+    this.props.onData?.({ magnetometerUncallibrated: data });
+  updateDeviceMotion = (data: any) =>
+    this.props.onData?.({ deviceOrientationData: data });
+
   render() {
     return (
       <ScrollView style={styles.container}>
-        <GyroscopeSensor />
+        <GyroscopeSensor onData={this.updateGyroscope} />
         <Separator />
-        <AccelerometerSensor />
+        <AccelerometerSensor onData={this.updateAccelerometer} />
         <Separator />
-        <MagnetometerSensor />
+        <MagnetometerSensor onData={this.updateMagnetometer} />
         <Separator />
-        <MagnetometerUncalibratedSensor />
+        <MagnetometerUncalibratedSensor
+          onData={this.updateMagnetometerUncallibrated}
+        />
         <Separator />
-        <DeviceMotionSensor />
+        <DeviceMotionSensor onData={this.updateDeviceMotion} />
       </ScrollView>
     );
   }
@@ -54,7 +69,9 @@ interface State<M extends object> {
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 abstract class SensorBlock<M extends object> extends React.Component<
-  {},
+  {
+    onData?: (data: M | null) => void;
+  },
   State<M>
 > {
   readonly state: State<M> = { data: {} as M };
@@ -68,6 +85,9 @@ abstract class SensorBlock<M extends object> extends React.Component<
   checkAvailability = async () => {
     const isAvailable = await this.getSensor().isAvailableAsync();
     this.setState({ isAvailable });
+    if (!isAvailable) {
+      this.props.onData?.(null);
+    }
   };
 
   componentWillUnmount() {
@@ -97,6 +117,7 @@ abstract class SensorBlock<M extends object> extends React.Component<
   _subscribe = () => {
     this._subscription = this.getSensor().addListener((data: any) => {
       this.setState({ data, isEnabled: true });
+      this.props.onData?.(data);
     });
   };
 
@@ -104,6 +125,7 @@ abstract class SensorBlock<M extends object> extends React.Component<
     this._subscription && this._subscription.remove();
     this._subscription = undefined;
     this.setState({ isEnabled: false });
+    this.props.onData?.(null);
   };
 
   render() {
