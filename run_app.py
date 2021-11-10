@@ -82,8 +82,10 @@ if platform is None:
 if platform != 'android' and platform != 'ios':
   raise Exception("Platform must be either android or ios! Quitting")
 
+qr_addr = f"{expo_addr}/{platform}-index.json"
 print(f"\nGenerated QR code for platform: {platform}")
-qr = pyqrcode.create(f"{expo_addr}/{platform}-index.json", error='L')
+print(f"QR Code address: {qr_addr}")
+qr = pyqrcode.create(qr_addr, error='L')
 print(qr.terminal(quiet_zone=1))
 
 print(f"\nExpo listening on {expo_addr}. Press Ctrl+C to exit.")
