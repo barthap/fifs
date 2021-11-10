@@ -1,6 +1,8 @@
+from http import HTTPStatus
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from shutil import copyfile
 import pyqrcode
+import json
 from server.utils import find_my_ip
 from os.path import join
 import signal
@@ -38,8 +40,26 @@ print(f"Detected IP address: {my_ip}")
 
 DIRECTORY = join('.', 'mobile-app', 'dist')
 class Handler(SimpleHTTPRequestHandler):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, directory=DIRECTORY, **kwargs)
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, directory=DIRECTORY, **kwargs)
+
+  def do_POST(self):
+    # the /logs endpoint handles console.log() from Expo app
+    if self.path == '/logs':
+      content_len = int(self.headers.get('Content-Length'))
+      post_body = self.rfile.read(content_len).decode("utf-8") 
+      logs = json.loads(post_body)
+      for log in logs:
+        body = " ".join(log['body'])
+        print(f'[{log["level"]}] {body}')
+
+      # self.send_response() logs the HTTP response info which spams the console.
+      # These 3 lines send response without printing logs.
+      self.send_response_only(HTTPStatus.OK, None)
+      self.send_header('Server', self.version_string())
+      self.send_header('Date', self.date_time_string())
+    else:
+      self.send_response(HTTPStatus.NOT_IMPLEMENTED)
 
 httpd = HTTPServer(('', 8123), Handler)
 
