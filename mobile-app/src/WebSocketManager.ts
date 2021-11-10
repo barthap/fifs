@@ -1,6 +1,5 @@
 import Constants from "expo-constants";
 import { SensorData } from "./SensorData";
-import WebSocket from "isomorphic-ws";
 import { URL } from "react-native-url-polyfill";
 
 export const bestEffortWebsocketUrl = () => {

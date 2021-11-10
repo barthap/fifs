@@ -1,7 +1,7 @@
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from shutil import copyfile
 import pyqrcode
-import socket
+from server.utils import find_my_ip
 from os.path import join
 import signal
 import sys
@@ -17,15 +17,6 @@ args = parser.parse_args()
 def signal_handler(sig, frame):
     print('\nStopping server...')
     sys.exit(0)
-
-
-# nie pytajcie, skopiowane ze StackOverflow xD
-def find_my_ip() -> str:
-  ip =  (([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")] or [[(s.connect(("8.8.8.8", 53)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]) + ["NO_IP_FOUND"])[0]
-  if ip == "NO_IP_FOUND":
-    raise Exception("Could not find your local IP address")
-  return ip
-
 
 def replace_file_contents(filename: str, old_string: str, new_string: str):
   # Safely read the input filename using 'with'
