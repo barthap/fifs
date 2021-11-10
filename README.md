@@ -4,6 +4,26 @@ TODO
 
 > Please don't touch the `mobile-app` and `.github` directories unless you know what you're doing ;)
 
+## How it works
+
+### Motion sensors
+
+The cross-platform [Expo SDK](https://expo.dev) APIs are used to gather sensor data from a mobile device:
+- [Gyroscope API](https://docs.expo.dev/versions/v43.0.0/sdk/gyroscope/)
+- [Accelerometer API](https://docs.expo.dev/versions/v43.0.0/sdk/accelerometer/)
+- [Magnetometer API](https://docs.expo.dev/versions/v43.0.0/sdk/magnetometer/) (both calibrated and uncalibrated)
+- [Device Motion API](https://docs.expo.dev/versions/v43.0.0/sdk/devicemotion/) - A more high-level API which outputs the sensor data already processed - it can be used for comparison with _our sensoric fusion_ results. It outputs the following:
+  - Acceleration (both with and without gravity)
+  - Device orietnation (in radians)
+  - Device rotation speed
+  - Screen orientation (portrait/landscape/upside down)
+  
+  More info about the data can be found on the [API documentation page](https://docs.expo.dev/versions/v43.0.0/sdk/devicemotion/).
+
+### To be continued
+
+## How to run
+
 ### Running your app
 
 1. These steps ensure that you have configured Python 3.x and `pip`. You can check your Python version by running:
