@@ -18,7 +18,7 @@ def update_line(hl, new_data):
   hl.set_xdata(np.array(np.append(xdata[-hist_points:], new_data[0])))
   hl.set_ydata(np.array(np.append(ydata[-hist_points:], new_data[1])))
   hl.set_3d_properties(np.array(np.append(zdata[-hist_points:], new_data[2])))
-  plt.pause(0.0001)
+  plt.pause(0.000001)
   plt.show(block=False)
 
 
@@ -31,7 +31,7 @@ def print_xyz(measurement):
   return f"x: {measurement['x']:.3f}  y: {measurement['y']:.3f}  z: {measurement['z']:.3f}"
 
 
-def print_sensor_data(raw_json_string, ax):
+def print_sensor_data(raw_json_string, axa, axg, axm, axr):
   json_data = json.loads(raw_json_string)
   print("\n\n\n\n")
   gyroscope = json_data['gyroscope']
@@ -65,8 +65,13 @@ def print_sensor_data(raw_json_string, ax):
 
   # nie chce mi sie tego pretty-printowac
   print("Device motion (raw data):")
-  # Here I implemented acceleration visualization
-  update_line(ax, (accelerometer['x'], accelerometer['y'], accelerometer['z']))
+
+  # Here I implemented data visualization
+  update_line(axa, (accelerometer['x'], accelerometer['y'], accelerometer['z']))
+  update_line(axg, (gyroscope['x'], gyroscope['y'], gyroscope['z']))
+  update_line(axm, (magnetometer['x'], magnetometer['y'], magnetometer['z']))
+  update_line(axr, (device_motion['rotation']['alpha'], device_motion['rotation']['beta'],
+                    device_motion['rotation']['gamma']))
   pp.pprint(device_motion)
 
 
@@ -74,8 +79,7 @@ async def handler(websocket, path):
   # for loop - receives sensor data until phone disconnects.
   print("A phone has connected")
   map = plt.figure()
-  ax_map = Axes3D(map)
-  ax_map.autoscale(enable=True, axis='both', tight=True)
+  ax_map = map.add_subplot(2, 2, 1, projection='3d')
   ax_map.set_xlabel("X axis")
   ax_map.set_ylabel("Y axis")
   ax_map.set_zlabel("Z axis")
@@ -84,10 +88,40 @@ async def handler(websocket, path):
   ax_map.set_zlim3d([-2.0, 2.0])
   ax_map.grid(False)
   ax_map.set_title("Acceleration measured by phone's sensors")
-  ax, = ax_map.plot3D([0], [0], [0], marker='D', markersize=5, mec='y', mfc='r')
+  axa, = ax_map.plot3D([0], [0], [0], marker='D', markersize=5, mec='y', mfc='r')
+  ax_map = map.add_subplot(2, 2, 2, projection='3d')
+  ax_map.set_xlabel("X axis")
+  ax_map.set_ylabel("Y axis")
+  ax_map.set_zlabel("Z axis")
+  ax_map.set_xlim3d([-5.0, 5.0])
+  ax_map.set_ylim3d([-5.0, 5.0])
+  ax_map.set_zlim3d([-5.0, 5.0])
+  ax_map.grid(False)
+  ax_map.set_title("Gyroscope measurement")
+  axg, = ax_map.plot3D([0], [0], [0], marker='D', markersize=5, mec='y', mfc='r')
+  ax_map = map.add_subplot(2, 2, 3, projection='3d')
+  ax_map.set_xlabel("X axis")
+  ax_map.set_ylabel("Y axis")
+  ax_map.set_zlabel("Z axis")
+  ax_map.set_xlim3d([-50.0, 50.0])
+  ax_map.set_ylim3d([-50.0, 50.0])
+  ax_map.set_zlim3d([-50.0, 50.0])
+  ax_map.grid(False)
+  ax_map.set_title("Magnotometr measurement")
+  axm, = ax_map.plot3D([0], [0], [0], marker='D', markersize=5, mec='y', mfc='r')
+  ax_map = map.add_subplot(2, 2, 4, projection='3d')
+  ax_map.set_xlabel("Alpha")
+  ax_map.set_ylabel("Beta")
+  ax_map.set_zlabel("Gamma")
+  ax_map.set_xlim3d([-360.0, 360.0])
+  ax_map.set_ylim3d([-360.0, 360.0])
+  ax_map.set_zlim3d([-360.0, 360.0])
+  ax_map.grid(False)
+  ax_map.set_title("Rotation measurement")
+  axr, = ax_map.plot3D([0], [0], [0], marker='D', markersize=5, mec='y', mfc='r')
 
   async for sensor_data in websocket:
-    print_sensor_data(sensor_data, ax)
+    print_sensor_data(sensor_data, axa, axg, axm, axr)
   
   print("\nPhone disconnected.")
 
