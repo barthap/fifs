@@ -7,19 +7,16 @@ import pprint
 from utils import find_my_ip
 from matplotlib import pyplot as plt
 import numpy as np
-from mpl_toolkits.mplot3d import Axes3D
 
 pp = pprint.PrettyPrinter(indent=2)
 
 
 def update_line(hl, new_data):
-  hist_points = 15
+  hist_points = 5
   xdata, ydata, zdata = hl._verts3d
   hl.set_xdata(np.array(np.append(xdata[-hist_points:], new_data[0])))
   hl.set_ydata(np.array(np.append(ydata[-hist_points:], new_data[1])))
   hl.set_3d_properties(np.array(np.append(zdata[-hist_points:], new_data[2])))
-  plt.pause(0.000001)
-  plt.show(block=False)
 
 
 def signal_handler(sig, frame):
@@ -72,6 +69,8 @@ def print_sensor_data(raw_json_string, axa, axg, axm, axr):
   update_line(axm, (magnetometer['x'], magnetometer['y'], magnetometer['z']))
   update_line(axr, (device_motion['rotation']['alpha'], device_motion['rotation']['beta'],
                     device_motion['rotation']['gamma']))
+  plt.pause(0.001)
+  plt.show(block=False)
   pp.pprint(device_motion)
 
 
@@ -79,7 +78,7 @@ async def handler(websocket, path):
   # for loop - receives sensor data until phone disconnects.
   print("A phone has connected")
   map = plt.figure()
-  ax_map = map.add_subplot(2, 2, 1, projection='3d')
+  ax_map = map.add_subplot(221, projection='3d')
   ax_map.set_xlabel("X axis")
   ax_map.set_ylabel("Y axis")
   ax_map.set_zlabel("Z axis")
@@ -89,7 +88,7 @@ async def handler(websocket, path):
   ax_map.grid(False)
   ax_map.set_title("Acceleration measured by phone's sensors")
   axa, = ax_map.plot3D([0], [0], [0], marker='D', markersize=5, mec='y', mfc='r')
-  ax_map = map.add_subplot(2, 2, 2, projection='3d')
+  ax_map = map.add_subplot(222, projection='3d')
   ax_map.set_xlabel("X axis")
   ax_map.set_ylabel("Y axis")
   ax_map.set_zlabel("Z axis")
@@ -99,7 +98,7 @@ async def handler(websocket, path):
   ax_map.grid(False)
   ax_map.set_title("Gyroscope measurement")
   axg, = ax_map.plot3D([0], [0], [0], marker='D', markersize=5, mec='y', mfc='r')
-  ax_map = map.add_subplot(2, 2, 3, projection='3d')
+  ax_map = map.add_subplot(223, projection='3d')
   ax_map.set_xlabel("X axis")
   ax_map.set_ylabel("Y axis")
   ax_map.set_zlabel("Z axis")
@@ -109,7 +108,7 @@ async def handler(websocket, path):
   ax_map.grid(False)
   ax_map.set_title("Magnotometr measurement")
   axm, = ax_map.plot3D([0], [0], [0], marker='D', markersize=5, mec='y', mfc='r')
-  ax_map = map.add_subplot(2, 2, 4, projection='3d')
+  ax_map = map.add_subplot(224, projection='3d')
   ax_map.set_xlabel("Alpha")
   ax_map.set_ylabel("Beta")
   ax_map.set_zlabel("Gamma")
@@ -119,7 +118,7 @@ async def handler(websocket, path):
   ax_map.grid(False)
   ax_map.set_title("Rotation measurement")
   axr, = ax_map.plot3D([0], [0], [0], marker='D', markersize=5, mec='y', mfc='r')
-
+  print("Plot was initialized")
   async for sensor_data in websocket:
     print_sensor_data(sensor_data, axa, axg, axm, axr)
   
