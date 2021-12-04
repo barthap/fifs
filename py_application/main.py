@@ -83,7 +83,7 @@ def print_sensor_data(raw_json_string, axa, axg, axm, axr, f):
   plt.pause(0.001)
 
   plt.show(block=False)
-  pp.pprint(device_motion)
+  #pp.pprint(device_motion)
 
 
 async def handler(websocket, path):
