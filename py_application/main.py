@@ -7,9 +7,10 @@ import pprint
 from utils import find_my_ip
 from matplotlib import pyplot as plt
 import numpy as np
+from filterpy.kalman import KalmanFilter
+from filterpy.common import Q_discrete_white_noise
 
 pp = pprint.PrettyPrinter(indent=2)
-
 
 def update_line(hl, new_data):
   hist_points = 5
@@ -28,7 +29,12 @@ def print_xyz(measurement):
   return f"x: {measurement['x']:.3f}  y: {measurement['y']:.3f}  z: {measurement['z']:.3f}"
 
 
-def print_sensor_data(raw_json_string, axa, axg, axm, axr):
+def calculate_orientation(acc, mgr, mag):
+  orient = 0
+  return orient
+
+
+def print_sensor_data(raw_json_string, axa, axg, axm, axr, f):
   json_data = json.loads(raw_json_string)
   print("\n\n\n\n")
   gyroscope = json_data['gyroscope']
@@ -64,12 +70,18 @@ def print_sensor_data(raw_json_string, axa, axg, axm, axr):
   print("Device motion (raw data):")
 
   # Here I implemented data visualization
+  f.predict()
+  f.update(np.array([[accelerometer['x'], accelerometer['y'], accelerometer['z']],
+                     [gyroscope['x'], gyroscope['y'], gyroscope['z']],
+                     [magnetometer['x'], magnetometer['y'], magnetometer['z']]]).reshape(9,1))
+  print(f.x)
   update_line(axa, (accelerometer['x'], accelerometer['y'], accelerometer['z']))
   update_line(axg, (gyroscope['x'], gyroscope['y'], gyroscope['z']))
-  update_line(axm, (magnetometer['x'], magnetometer['y'], magnetometer['z']))
+  update_line(axm, (f.x[0], f.x[1], f.x[2]))
   update_line(axr, (device_motion['rotation']['alpha'], device_motion['rotation']['beta'],
                     device_motion['rotation']['gamma']))
   plt.pause(0.001)
+
   plt.show(block=False)
   pp.pprint(device_motion)
 
@@ -102,9 +114,9 @@ async def handler(websocket, path):
   ax_map.set_xlabel("X axis")
   ax_map.set_ylabel("Y axis")
   ax_map.set_zlabel("Z axis")
-  ax_map.set_xlim3d([-50.0, 50.0])
-  ax_map.set_ylim3d([-50.0, 50.0])
-  ax_map.set_zlim3d([-50.0, 50.0])
+  ax_map.set_xlim3d([-8.0, 8.0])
+  ax_map.set_ylim3d([-8.0, 8.0])
+  ax_map.set_zlim3d([-8.0, 8.0])
   ax_map.grid(False)
   ax_map.set_title("Magnotometr measurement")
   axm, = ax_map.plot3D([0], [0], [0], marker='D', markersize=5, mec='y', mfc='r')
@@ -112,15 +124,36 @@ async def handler(websocket, path):
   ax_map.set_xlabel("Alpha")
   ax_map.set_ylabel("Beta")
   ax_map.set_zlabel("Gamma")
-  ax_map.set_xlim3d([-360.0, 360.0])
-  ax_map.set_ylim3d([-360.0, 360.0])
-  ax_map.set_zlim3d([-360.0, 360.0])
+  ax_map.set_xlim3d([-8.0, 8.0])
+  ax_map.set_ylim3d([-8.0, 8.0])
+  ax_map.set_zlim3d([-8.0, 8.0])
   ax_map.grid(False)
   ax_map.set_title("Rotation measurement")
   axr, = ax_map.plot3D([0], [0], [0], marker='D', markersize=5, mec='y', mfc='r')
   print("Plot was initialized")
+
+  f = KalmanFilter(dim_x=3, dim_z=9)
+  f.x = np.array([[0],
+                  [0],
+                  [0]])
+  f.F = np.array([[1., 1., 1.],
+                  [0., 1., 1.],
+                  [0., 0., 1.]])
+  f.H = np.array([[1, 1, 1],
+                  [1, 1, 1],
+                  [1, 1, 1],
+                  [1, 1, 1],
+                  [1, 1, 1],
+                  [1, 1, 1],
+                  [1, 1, 1],
+                  [1, 1, 1],
+                  [1, 1, 1]])
+  f.P *= 1000.
+  f.R = np.eye(9) * 0.1
+  f.Q = Q_discrete_white_noise(dim=3, dt=0.1, var=0.13)
+
   async for sensor_data in websocket:
-    print_sensor_data(sensor_data, axa, axg, axm, axr)
+    print_sensor_data(sensor_data, axa, axg, axm, axr, f)
   
   print("\nPhone disconnected.")
 
