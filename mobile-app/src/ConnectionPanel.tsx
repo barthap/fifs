@@ -9,7 +9,7 @@ import {
 import { getSensorData } from "./SensorData";
 import { bestEffortWebsocketUrl, WebSocketManager } from "./WebSocketManager";
 
-const WS_MESSAGE_INTERVAL = 50; // 50ms = 20Hz
+const WS_MESSAGE_INTERVAL = 500; // 500ms = 2Hz
 
 export default function ConnectionPanel() {
   const [url, setUrl] = React.useState(bestEffortWebsocketUrl());

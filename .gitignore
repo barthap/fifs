@@ -4,3 +4,5 @@ py_application/__pycache__/
 server/__pycache__/
 
 py_application/.idea/
+.idea/
+venv/
