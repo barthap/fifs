@@ -1,3 +1,4 @@
+# dupa
 import asyncio
 import websockets
 import json
@@ -110,14 +111,14 @@ async def handler(websocket, path):
     ax_map.set_title("Gyroscope measurement")
     axg, = ax_map.plot3D([0], [0], [0], marker='D', markersize=5, mec='y', mfc='r')
     ax_map = map.add_subplot(223, projection='3d')
-    ax_map.set_xlabel("X axis")
-    ax_map.set_ylabel("Y axis")
-    ax_map.set_zlabel("Z axis")
+    ax_map.set_xlabel("Alpha")
+    ax_map.set_ylabel("Beta")
+    ax_map.set_zlabel("Gamma")
     ax_map.set_xlim3d([-8.0, 8.0])
     ax_map.set_ylim3d([-8.0, 8.0])
     ax_map.set_zlim3d([-8.0, 8.0])
     ax_map.grid(False)
-    ax_map.set_title("Magnotometr measurement")
+    ax_map.set_title("Rotation measurement Kalman")
     axm, = ax_map.plot3D([0], [0], [0], marker='D', markersize=5, mec='y', mfc='r')
     ax_map = map.add_subplot(224, projection='3d')
     ax_map.set_xlabel("Alpha")
