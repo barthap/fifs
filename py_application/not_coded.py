@@ -1,7 +1,7 @@
 # dupa
 import asyncio
 import websockets
-import json
+import bson
 import signal
 import sys
 import pprint
@@ -36,14 +36,14 @@ def calculate_orientation(acc, mgr, mag):
     return orient
 
 
-def print_sensor_data(raw_json_string, axa, axg, axm, axr, f):
-    json_data = json.loads(raw_json_string)
+def print_sensor_data(raw_bson_string, axa, axg, axm, axr, f):
+    bson_data = bson.loads(raw_bson_string)
     print("\n\n\n\n")
-    gyroscope = json_data['gyroscope']
-    accelerometer = json_data['accelerometer']
-    magnetometer = json_data['magnetometer']
-    magnetometer_uncalibrated = json_data['magnetometerUncallibrated']
-    device_motion = json_data['deviceOrientationData']
+    gyroscope = bson_data['gyroscope']
+    accelerometer = bson_data['accelerometer']
+    magnetometer = bson_data['magnetometer']
+    magnetometer_uncalibrated = bson_data['magnetometerUncallibrated']
+    device_motion = bson_data['deviceOrientationData']
 
     if gyroscope is not None:
 

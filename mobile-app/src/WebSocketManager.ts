@@ -1,6 +1,7 @@
 import Constants from "expo-constants";
 import { SensorData } from "./SensorData";
 import { URL } from "react-native-url-polyfill";
+import { serialize } from "bson";
 
 export const bestEffortWebsocketUrl = () => {
   const url = new URL(Constants.experienceUrl);
@@ -48,7 +49,7 @@ export class WebSocketManager {
 
   sendSensorData(data: SensorData) {
     if (this.isConnected) {
-      this._ws?.send(JSON.stringify(data));
+      this._ws?.send(serialize(data));
     }
   }
 }
