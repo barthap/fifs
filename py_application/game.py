@@ -8,7 +8,6 @@ import signal
 import sys
 from utils import find_my_ip
 
-
 BLACK, RED = (0, 0, 0), (255, 128, 128)
 
 X, Y, Z = 0, 1, 2
@@ -22,9 +21,9 @@ def rotation_matrix(α, β, γ):
     sβ, cβ = sin(β), cos(β)
     sγ, cγ = sin(γ), cos(γ)
     return (
-        (cβ*cγ, -cβ*sγ, sβ),
-        (cα*sγ + sα*sβ*cγ, cα*cγ - sγ*sα*sβ, -cβ*sα),
-        (sγ*sα - cα*sβ*cγ, cα*sγ*sβ + sα*cγ, cα*cβ)
+        (cβ * cγ, -cβ * sγ, sβ),
+        (cα * sγ + sα * sβ * cγ, cα * cγ - sγ * sα * sβ, -cβ * sα),
+        (sγ * sα - cα * sβ * cγ, cα * sγ * sβ + sα * cγ, cα * cβ)
     )
 
 
@@ -54,9 +53,10 @@ class Physical:
 cube = Physical(  # 0         1            2            3           4            5            6            7
     vertices=((1, 1, 1), (1, 1, -1), (1, -1, 1), (1, -1, -1), (-1, 1, 1), (-1, 1, -1), (-1, -1, 1), (-1, -1, -1)),
     edges=({0, 1}, {0, 2}, {2, 3}, {1, 3},
-            {4, 5}, {4, 6}, {6, 7}, {5, 7},
-            {0, 4}, {1, 5}, {2, 6}, {3, 7})
+           {4, 5}, {4, 6}, {6, 7}, {5, 7},
+           {0, 4}, {1, 5}, {2, 6}, {3, 7})
 )
+
 
 def signal_handler(sig, frame):
     print('\nExiting...')
@@ -65,30 +65,31 @@ def signal_handler(sig, frame):
     pygame.quit()
     sys.exit(0)
 
+
 def process_sensor_data(raw_bson_string):
-  bson_data = bson.loads(raw_bson_string)
+    bson_data = bson.loads(raw_bson_string)
+    gyroscope = bson_data['gyroscope']
+    accelerometer = bson_data['accelerometer']
+    magnetometer = bson_data['magnetometer']
+    magnetometer_uncalibrated = bson_data['magnetometerUncallibrated']
+    device_motion = bson_data['deviceOrientationData']
 
-  gyroscope = bson_data['gyroscope']
-  accelerometer = bson_data['accelerometer']
-  magnetometer = bson_data['magnetometer']
-  magnetometer_uncalibrated = bson_data['magnetometerUncallibrated']
-  device_motion = bson_data['deviceOrientationData']
+    if device_motion == None:
+        return
 
-  if device_motion == None:
-    return
-
-  cube.set_rotation(Y, -device_motion['rotation']['alpha'])
-  cube.set_rotation(X, device_motion['rotation']['beta'])
-  cube.set_rotation(Z, -device_motion['rotation']['gamma'])
+    cube.set_rotation(Y, -device_motion['rotation']['alpha'])
+    cube.set_rotation(X, device_motion['rotation']['beta'])
+    cube.set_rotation(Z, -device_motion['rotation']['gamma'])
 
 
 async def handler(websocket, path):
-  # for loop - receives sensor data until phone disconnects.
-  print("A phone has connected")
-  async for sensor_data in websocket:
-    process_sensor_data(sensor_data)
-  
-  print("\nPhone disconnected.")
+    # for loop - receives sensor data until phone disconnects.
+    print("A phone has connected")
+    async for sensor_data in websocket:
+        process_sensor_data(sensor_data)
+
+    print("\nPhone disconnected.")
+
 
 async def main_ws():
     print(f"WebSocket server listening at: ws://{find_my_ip()}:8765")
@@ -119,12 +120,14 @@ class Paint:
         pygame.display.flip()
         # self.__clock.tick(40)
 
+
 async def pygame_event_loop(event_queue):
     while True:
-      await asyncio.sleep(0)
-      event = pygame.event.poll()
-      if event.type != pygame.NOEVENT:
+        await asyncio.sleep(0)
+        event = pygame.event.poll()
+        if event.type != pygame.NOEVENT:
             await event_queue.put(event)
+
 
 async def draw(ball: Paint):
     black = 0, 0, 0
@@ -139,6 +142,7 @@ async def draw(ball: Paint):
         # pygame.display.flip()
         await asyncio.sleep(40 / 1000)
         ball.draw()
+
 
 async def handle_events(event_queue):
     while True:
@@ -156,6 +160,7 @@ async def handle_events(event_queue):
     print("\nExiting event loop...")
     asyncio.get_event_loop().stop()
     print("Main loop stopped.")
+
 
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_handler)
