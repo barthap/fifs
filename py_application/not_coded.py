@@ -8,7 +8,7 @@ import pprint
 from utils import find_my_ip
 from matplotlib import pyplot as plt
 import numpy as np
-from filterpy.kalman import KalmanFilter
+import kalman
 from filterpy.common import Q_discrete_white_noise
 
 pp = pprint.PrettyPrinter(indent=2)
@@ -70,14 +70,13 @@ def print_sensor_data(raw_bson_string, axa, axg, axm, axr, f):
     print("Device motion (raw data):")
 
     # Here I implemented data visualization
-    f.predict()
-    f.update(np.array([[accelerometer['x'], accelerometer['y'], accelerometer['z']],
-                       [gyroscope['x'], gyroscope['y'], gyroscope['z']],
-                       [magnetometer['x'], magnetometer['y'], magnetometer['z']]]).reshape(9, 1))
-    print(f.x)
+
+    f.computeAndUpdateRollPitchYaw(accelerometer['x'], accelerometer['y'], accelerometer['z'],
+                                   gyroscope['x'], gyroscope['y'], gyroscope['z'],
+                                   magnetometer['x'], magnetometer['y'], magnetometer['z'], 0.1)
     update_line(axa, (accelerometer['x'], accelerometer['y'], accelerometer['z']))
     update_line(axg, (gyroscope['x'], gyroscope['y'], gyroscope['z']))
-    update_line(axm, (f.x[0], f.x[1], f.x[2]))
+    update_line(axm, (f.roll*np.pi/180, f.pitch*np.pi/180, f.yaw*np.pi/180))
     update_line(axr, (device_motion['rotation']['alpha'], device_motion['rotation']['beta'],
                       device_motion['rotation']['gamma']))
     plt.pause(0.001)
@@ -132,25 +131,7 @@ async def handler(websocket, path):
     axr, = ax_map.plot3D([0], [0], [0], marker='D', markersize=5, mec='y', mfc='r')
     print("Plot was initialized")
 
-    f = KalmanFilter(dim_x=3, dim_z=9)
-    f.x = np.array([[0],
-                    [0],
-                    [0]])
-    f.F = np.array([[1., 1., 1.],
-                    [0., 1., 1.],
-                    [0., 0., 1.]])
-    f.H = np.array([[1, 1, 1],
-                    [1, 1, 1],
-                    [1, 1, 1],
-                    [1, 1, 1],
-                    [1, 1, 1],
-                    [1, 1, 1],
-                    [1, 1, 1],
-                    [1, 1, 1],
-                    [1, 1, 1]])
-    f.P *= 1.
-    f.R = np.eye(9) * 0.1
-    f.Q = Q_discrete_white_noise(dim=3, dt=0.1, var=0.13)
+    f = kalman.Kalman()
 
     async for sensor_data in websocket:
         print_sensor_data(sensor_data, axa, axg, axm, axr, f)
