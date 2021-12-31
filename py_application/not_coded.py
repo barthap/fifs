@@ -67,16 +67,20 @@ def print_sensor_data(raw_bson_string, axa, axg, axm, axr, f):
         print(f"Magnetometer (uncalibrated): disabled" + ' ' * 0)
 
     # nie chce mi sie tego pretty-printowac
-    print("Device motion (raw data):")
 
+    print("Device motion (raw data):")
+    print(f"alpha = {device_motion['rotation']['alpha']}, beta = {device_motion['rotation']['beta']},"
+          f" gamma = {device_motion['rotation']['gamma']}")
     # Here I implemented data visualization
 
     f.computeAndUpdateRollPitchYaw(accelerometer['x'], accelerometer['y'], accelerometer['z'],
                                    gyroscope['x'], gyroscope['y'], gyroscope['z'],
                                    magnetometer['x'], magnetometer['y'], magnetometer['z'], 0.1)
+    print("Device motion kalman:")
+    print(f"alpha = {np.deg2rad(f.yaw)}, beta = {np.deg2rad(f.pitch)}, gamma = {np.deg2rad(f.roll)}")
     update_line(axa, (accelerometer['x'], accelerometer['y'], accelerometer['z']))
     update_line(axg, (gyroscope['x'], gyroscope['y'], gyroscope['z']))
-    update_line(axm, (f.roll*np.pi/180, f.pitch*np.pi/180, f.yaw*np.pi/180))
+    update_line(axm, (np.deg2rad(f.yaw), np.deg2rad(f.pitch), np.deg2rad(f.roll)))
     update_line(axr, (device_motion['rotation']['alpha'], device_motion['rotation']['beta'],
                       device_motion['rotation']['gamma']))
     plt.pause(0.001)
