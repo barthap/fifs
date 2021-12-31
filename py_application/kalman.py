@@ -215,8 +215,8 @@ class Kalman:
                     It is estimated pitch from sensor values
         """
 
-        measuredRoll = np.degrees(np.arctan2(ay, az))
-        measuredPitch = np.degrees(np.arctan2(-1 * ax, np.sqrt(np.square(ay) + np.square(az))))
+        measuredPitch = np.degrees(np.arctan2(ay, np.sqrt(np.square(ax) + np.square(az))))
+        measuredRoll = np.degrees(np.arctan2(-1 * ax, np.sqrt(np.square(ay) + np.square(az))))
 
         return measuredRoll, measuredPitch
 
@@ -245,12 +245,12 @@ class Kalman:
         pitch = np.radians(pitch)
         magLength = np.sqrt(sum([mx * mx + my * my + mz * mz]))
         mx = mx / magLength
-        my = my / magLength
-        mz = mz / magLength
+        my = -my / magLength
+        mz = -mz / magLength
 
-        measuredYaw = np.degrees(np.arctan2(np.sin(roll) * mz - np.cos(roll) * my, \
-                                            np.cos(pitch) * mx + np.sin(roll) * np.sin(pitch) * my \
-                                            + np.cos(roll) * np.sin(pitch) * mz))
+        measuredYaw = np.degrees(np.arctan2(np.sin(pitch) * mz - np.cos(pitch) * mx,
+                                            np.sin(roll) * np.sin(pitch) * mx + np.cos(roll) * my \
+                                            - np.cos(pitch) * np.sin(roll) * mz))
 
         return measuredYaw
 
