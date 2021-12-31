@@ -77,10 +77,10 @@ def print_sensor_data(raw_bson_string, axa, axg, axm, axr, f):
                                    gyroscope['x'], gyroscope['y'], gyroscope['z'],
                                    magnetometer['x'], magnetometer['y'], magnetometer['z'], 0.1)
     print("Device motion kalman:")
-    print(f"alpha = {np.deg2rad(f.yaw)+np.pi}, beta = {np.deg2rad(f.pitch)}, gamma = {np.deg2rad(f.roll)}")
+    print(f"alpha = {np.deg2rad(f.yaw)+2*np.pi}, beta = {np.deg2rad(f.pitch)}, gamma = {np.deg2rad(f.roll)}")
     update_line(axa, (accelerometer['x'], accelerometer['y'], accelerometer['z']))
     update_line(axg, (gyroscope['x'], gyroscope['y'], gyroscope['z']))
-    update_line(axm, (np.deg2rad(f.yaw)+np.pi, np.deg2rad(f.pitch), np.deg2rad(f.roll)))
+    update_line(axm, (np.deg2rad(f.yaw)+2*np.pi, np.deg2rad(f.pitch), np.deg2rad(f.roll)))
     update_line(axr, (device_motion['rotation']['alpha'], device_motion['rotation']['beta'],
                       device_motion['rotation']['gamma']))
     plt.pause(0.001)
