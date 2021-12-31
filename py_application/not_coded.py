@@ -132,8 +132,16 @@ async def handler(websocket, path):
     print("Plot was initialized")
 
     f = kalman.Kalman()
-
+    a = 0
     async for sensor_data in websocket:
+        if a == 0:
+            print('initialization')
+            bson_data = bson.loads(sensor_data)
+            device_motion = bson_data['deviceOrientationData']
+            f.roll = device_motion['rotation']['alpha']
+            f.pitch = device_motion['rotation']['beta']
+            f.yaw = device_motion['rotation']['gamma']
+            a += 1
         print_sensor_data(sensor_data, axa, axg, axm, axr, f)
 
     print("\nPhone disconnected.")
