@@ -9,7 +9,6 @@ from utils import find_my_ip
 from matplotlib import pyplot as plt
 import numpy as np
 import kalman
-from filterpy.common import Q_discrete_white_noise
 
 pp = pprint.PrettyPrinter(indent=2)
 
@@ -29,11 +28,6 @@ def signal_handler(sig, frame):
 
 def print_xyz(measurement):
     return f"x: {measurement['x']:.3f}  y: {measurement['y']:.3f}  z: {measurement['z']:.3f}"
-
-
-def calculate_orientation(acc, mgr, mag):
-    orient = 0
-    return orient
 
 
 def print_sensor_data(raw_bson_string, axa, axg, axm, axr, f):
@@ -75,7 +69,7 @@ def print_sensor_data(raw_bson_string, axa, axg, axm, axr, f):
 
     f.computeAndUpdateRollPitchYaw(accelerometer['x'], accelerometer['y'], accelerometer['z'],
                                    gyroscope['x'], gyroscope['y'], gyroscope['z'],
-                                   magnetometer['x'], magnetometer['y'], magnetometer['z'], 0.2)
+                                   magnetometer['x'], magnetometer['y'], magnetometer['z'], 0.5)
     print("Device motion kalman:")
     print(f"alpha = {np.deg2rad(f.yaw)}, beta = {np.deg2rad(f.pitch)}, gamma = {np.deg2rad(f.roll)}")
     update_line(axa, (accelerometer['x'], accelerometer['y'], accelerometer['z']))
@@ -142,9 +136,9 @@ async def handler(websocket, path):
             print('initialization')
             bson_data = bson.loads(sensor_data)
             device_motion = bson_data['deviceOrientationData']
-            f.roll = device_motion['rotation']['alpha']
+            f.yaw = device_motion['rotation']['alpha']
             f.pitch = device_motion['rotation']['beta']
-            f.yaw = device_motion['rotation']['gamma']
+            f.roll = device_motion['rotation']['gamma']
             a += 1
         print_sensor_data(sensor_data, axa, axg, axm, axr, f)
 

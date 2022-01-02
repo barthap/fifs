@@ -249,9 +249,9 @@ class Kalman:
         mz = mz / magLength
 
         measuredYaw = np.degrees(np.arctan2(np.sin(roll) * mz - np.cos(roll) * my,
-                                            np.cos(pitch) * mx + np.sin(roll) * np.sin(pitch) * my \
+                                            np.cos(pitch) * mx + np.sin(roll) * np.sin(pitch) * my
                                             + np.cos(roll) * np.sin(pitch) * mz))
-
+        print(measuredYaw)
         return measuredYaw
 
     def update(self, currentState, measurement, currentCovariance, error, driftError, measurementError, angularVelocity,
