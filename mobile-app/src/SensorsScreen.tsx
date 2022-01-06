@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { SensorData } from "./SensorData";
 
-const FAST_INTERVAL = 500; // 32ms = ~30Hz
+const FAST_INTERVAL = 50; // 32ms = ~30Hz
 const SLOW_INTERVAL = 1000; //ms
 
 function Separator() {
