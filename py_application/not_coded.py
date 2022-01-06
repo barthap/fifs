@@ -66,10 +66,10 @@ def print_sensor_data(raw_bson_string, axa, axg, axm, axr, f):
     print(f"alpha = {device_motion['rotation']['alpha']}, beta = {device_motion['rotation']['beta']},"
           f" gamma = {device_motion['rotation']['gamma']}")
     # Here I implemented data visualization
-
     f.computeAndUpdateRollPitchYaw(accelerometer['x'], accelerometer['y'], accelerometer['z'],
                                    gyroscope['x'], gyroscope['y'], gyroscope['z'],
-                                   magnetometer['x'], magnetometer['y'], magnetometer['z'], 0.5)
+                                   magnetometer['x'], magnetometer['y'], magnetometer['z'], 0.05,
+                                   device_motion['rotation']['alpha'])
     print("Device motion kalman:")
     print(f"alpha = {np.deg2rad(f.yaw)}, beta = {np.deg2rad(f.pitch)}, gamma = {np.deg2rad(f.roll)}")
     update_line(axa, (accelerometer['x'], accelerometer['y'], accelerometer['z']))

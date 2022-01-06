@@ -37,7 +37,7 @@ class Kalman:
         self.yawDriftError = 0.003
         self.yawMeasurementError = 0.03
 
-    def computeAndUpdateRollPitchYaw(self, ax, ay, az, gx, gy, gz, mx, my, mz, dt):
+    def computeAndUpdateRollPitchYaw(self, ax, ay, az, gx, gy, gz, mx, my, mz, dt, da):
         """
         Computes roll, pitch and yaw
         Parameters
@@ -69,7 +69,6 @@ class Kalman:
 
         measuredRoll, measuredPitch = self.computeRollAndPitch(ax, ay, az)
         measuredYaw = self.computeYaw(measuredRoll, measuredPitch, mx, my, mz)
-
         reset, gy = self.__restrictRollAndPitch(measuredRoll, measuredPitch, gy)
         # reset = 0
         if not reset:
@@ -87,6 +86,7 @@ class Kalman:
                                                                          measuredYaw, self.yawCovariance, \
                                                                          self.yawError, self.yawDriftError, \
                                                                          self.yawMeasurementError, gz, dt)
+        self.yaw = self.yaw * 0.01 + np.rad2deg(da)
 
     def __restrictRollAndPitch(self, measuredRoll, measuredPitch, gy):
 
@@ -243,8 +243,6 @@ class Kalman:
 
         roll = np.radians(roll)
         pitch = np.radians(pitch)
-        print(roll)
-        print(pitch)
         magLength = np.sqrt(sum([mx * mx + my * my + mz * mz]))
         mx = mx / magLength
         my = my / magLength
@@ -254,8 +252,6 @@ class Kalman:
                                             np.cos(pitch) * mx + np.sin(roll) * np.sin(pitch) * my \
                                             + np.cos(roll) * np.sin(pitch) * mz))
 
-
-        print(np.deg2rad(measuredYaw))
         return measuredYaw
 
     def update(self, currentState, measurement, currentCovariance, error, driftError, measurementError, angularVelocity,
@@ -304,14 +300,13 @@ class Kalman:
         errorMatrix = np.array([error, driftError]) * np.identity(2)
         predictedCovariance = np.matmul(np.matmul(motionModel, currentCovariance), (motionModel.T)) + errorMatrix
 
-        difference = measurement - np.matmul(np.array([1.0, 1.0]), prediction)
 
         measurementCovariance = np.matmul(np.matmul(np.array([1.0, 0.0]), predictedCovariance),
                                           np.vstack((1.0, 0.0))) + measurementError
         kalmanGain = np.matmul(predictedCovariance, np.vstack((1.0, 0.0))) / measurementCovariance
 
         correctedState = prediction + kalmanGain * (measurement - np.matmul(np.array([1.0, 0.0]), prediction))
-        # correctedState = prediction + kalmanGain*(difference)
+        #correctedState = prediction + kalmanGain*(difference)
 
         updatedCovariance = np.matmul(np.identity(2) - np.matmul(kalmanGain, np.array([1.0, 0.0]).reshape((1, 2))),
                                       predictedCovariance)
