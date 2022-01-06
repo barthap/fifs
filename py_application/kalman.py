@@ -243,6 +243,8 @@ class Kalman:
 
         roll = np.radians(roll)
         pitch = np.radians(pitch)
+        print(roll)
+        print(pitch)
         magLength = np.sqrt(sum([mx * mx + my * my + mz * mz]))
         mx = mx / magLength
         my = my / magLength
@@ -251,6 +253,8 @@ class Kalman:
         measuredYaw = np.degrees(np.arctan2(np.sin(roll) * mz - np.cos(roll) * my,
                                             np.cos(pitch) * mx + np.sin(roll) * np.sin(pitch) * my \
                                             + np.cos(roll) * np.sin(pitch) * mz))
+
+
         print(np.deg2rad(measuredYaw))
         return measuredYaw
 
