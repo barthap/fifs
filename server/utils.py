@@ -1,3 +1,4 @@
+import math
 import socket
 
 # nie pytajcie, skopiowane ze StackOverflow xD
@@ -6,3 +7,8 @@ def find_my_ip() -> str:
   if ip == "NO_IP_FOUND":
     raise Exception("Could not find your local IP address")
   return ip
+
+
+# convert radians to degrees float
+def rad_to_deg(rad):
+    return rad * 180 / math.pi

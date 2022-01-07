@@ -1,73 +1,150 @@
+import time
+import pygame
 import asyncio
+from pygame.constants import DOUBLEBUF, OPENGL
 import websockets
 import bson
 import signal
 import sys
-import pprint
+from graphics.model import Model3D
+from graphics.object import SceneObject
+from graphics.window import Window
+from kalman import Kalman
+from utils import find_my_ip, rad_to_deg
 
-from utils import find_my_ip
+from OpenGL.GL import *
+from OpenGL.GLU import *
 
-pp = pprint.PrettyPrinter(indent=2)
+BLACK, RED = (0, 0, 0), (255, 128, 128)
+
+X, Y, Z = 0, 1, 2
+
+
+
+model = Model3D('models/iPhoneX.obj')
+cube = SceneObject(model)
+
+fusion = Kalman()
+
 
 def signal_handler(sig, frame):
-    print('\nStopping server...')
+    print('\nExiting...')
+    print('Stopping server...')
+    asyncio.get_event_loop().stop()
+    pygame.quit()
     sys.exit(0)
 
 
-def print_xyz(measurement):
-  return f"x: {measurement['x']:.3f}  y: {measurement['y']:.3f}  z: {measurement['z']:.3f}"
+def process_sensor_data(raw_bson_string):
+    bson_data = bson.loads(raw_bson_string)
+    gyroscope = bson_data['gyroscope']
+    accelerometer = bson_data['accelerometer']
+    magnetometer = bson_data['magnetometer']
+    magnetometer_uncalibrated = bson_data['magnetometerUncallibrated']
+    device_motion = bson_data['deviceOrientationData']
+    
 
-def print_sensor_data(raw_bson_string):
-  bson_data = bson.loads(raw_bson_string)
+    if device_motion == None:
+        return
 
-  print("\n\n\n\n")
+    current_time = time.time()
+    dt = current_time - process_sensor_data.last_time
+    process_sensor_data.last_time = current_time
 
-  gyroscope = bson_data['gyroscope']
-  accelerometer = bson_data['accelerometer']
-  magnetometer = bson_data['magnetometer']
-  magnetometer_uncalibrated = bson_data['magnetometerUncallibrated']
-  device_motion = bson_data['deviceOrientationData']
+    fusion.computeAndUpdateRollPitchYaw(accelerometer['x'], accelerometer['y'], accelerometer['z'],
+                                   gyroscope['x'], gyroscope['y'], gyroscope['z'],
+                                   magnetometer['x'], magnetometer['y'], magnetometer['z'], dt,
+                                   device_motion['rotation']['alpha'])
 
-  if gyroscope is not None:
+    alpha = device_motion['rotation']['alpha']
+    beta = device_motion['rotation']['beta']
+    gamma = device_motion['rotation']['gamma']
+    alpha, beta, gamma = rad_to_deg(alpha), rad_to_deg(beta), rad_to_deg(gamma)
+    cube.set_rotation(Y, -alpha)
+    cube.set_rotation(X, beta)
+    cube.set_rotation(Z, -gamma)
+    # cube.set_rotation(Y, -fusion.yaw)
+    # cube.set_rotation(X, -fusion.pitch)
+    # cube.set_rotation(Z, fusion.roll)
 
-    print(f"Gyroscope: {print_xyz(gyroscope)}")
-  else:
-    print(f"Gyroscope: disabled" + ' ' * 30)
 
-  if accelerometer is not None:
-    print(f"Accelerometer:  {print_xyz(accelerometer)}")
-  else:
-    print(f"Accelerometer: disabled" + ' ' * 30)
-
-  if magnetometer is not None:
-    print(f"Magnetometer:  {print_xyz(magnetometer)}")
-  else:
-    print(f"Magnetometer: disabled" + ' ' * 30)
-
-  
-  if magnetometer_uncalibrated is not None:
-    print(f"Magnetometer (uncalibrated):  {print_xyz(magnetometer_uncalibrated)}")
-  else:
-    print(f"Magnetometer (uncalibrated): disabled" + ' ' * 0)
-  
-
-  # nie chce mi sie tego pretty-printowac
-  print("Device motion (raw data):")
-  pp.pprint(device_motion)
+process_sensor_data.last_time = time.time()
 
 
 async def handler(websocket, path):
-  # for loop - receives sensor data until phone disconnects.
-  print("A phone has connected")
-  async for sensor_data in websocket:
-    print_sensor_data(sensor_data)
-  
-  print("\nPhone disconnected.")
+    # for loop - receives sensor data until phone disconnects.
+    print("A phone has connected")
+    async for sensor_data in websocket:
+        process_sensor_data(sensor_data)
 
-async def main():
+    print("\nPhone disconnected.")
+
+
+async def main_ws():
+    print(f"WebSocket server listening at: ws://{find_my_ip()}:8765")
     async with websockets.serve(handler, port=8765):
         await asyncio.Future()  # run forever
 
-print(f"WebSocket server listening at: ws://{find_my_ip()}:8765")
-signal.signal(signal.SIGINT, signal_handler)
-asyncio.run(main())
+
+async def pygame_event_loop(event_queue):
+    while True:
+        await asyncio.sleep(0)
+        event = pygame.event.poll()
+        if event.type != pygame.NOEVENT:
+            await event_queue.put(event)
+
+
+async def draw(window: Window):
+    current_time = 0
+    while True:
+        # last_time, current_time = current_time, time.time()
+        # await asyncio.sleep(1 / 40 - (current_time - last_time))  # tick
+        # ball.move()
+        # screen.fill(BLACK)
+        # ball.draw(screen)
+        # pygame.display.flip()
+        await asyncio.sleep(16 / 1000)
+        window.draw()
+
+
+async def handle_events(event_queue):
+    while True:
+        event = await event_queue.get()
+        if event.type == pygame.QUIT:
+            break
+        # elif event.type == pygame.KEYDOWN:
+        #     if event.key == pygame.K_ESCAPE:
+        #         break
+        # else:
+        #     print("event", event)
+    print("\nExiting event loop...")
+    asyncio.get_event_loop().stop()
+    print("Main loop stopped.")
+
+
+if __name__ == '__main__':
+    signal.signal(signal.SIGINT, signal_handler)
+    loop = asyncio.get_event_loop()
+    event_queue = asyncio.Queue()
+
+    pygame.init()
+
+    window = Window(cube, title="Skalmar Game", size=(1280, 720))
+
+    pygame_task = asyncio.ensure_future(pygame_event_loop(event_queue))
+    event_task = asyncio.ensure_future(handle_events(event_queue))
+    drawing_task = asyncio.ensure_future(draw(window))
+    websocket_task = asyncio.ensure_future(main_ws())
+
+    try:
+        loop.run_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        pygame_task.cancel()
+        event_task.cancel()
+        drawing_task.cancel()
+        websocket_task.cancel()
+
+    pygame.quit()
+    print("Finishing")

@@ -40,6 +40,11 @@ def print_sensor_data(raw_bson_string, axa, axg, axm, axr, f: kalman.Kalman):
     magnetometer_uncalibrated = bson_data['magnetometerUncallibrated']
     device_motion = bson_data['deviceOrientationData']
 
+    alpha = device_motion['rotation']['alpha']
+    beta = device_motion['rotation']['beta']
+    gamma = device_motion['rotation']['gamma']
+
+
     # if gyroscope is not None:
 
     #     print(f"Gyroscope: {print_xyz(gyroscope)}")
@@ -82,9 +87,8 @@ def print_sensor_data(raw_bson_string, axa, axg, axm, axr, f: kalman.Kalman):
     print(f"alpha = {np.deg2rad(f.yaw)}, beta = {np.deg2rad(f.pitch)}, gamma = {np.deg2rad(f.roll)}")
     update_line(axa, (accelerometer['x'], accelerometer['y'], accelerometer['z']))
     update_line(axg, (gyroscope['x'], gyroscope['y'], gyroscope['z']))
-    update_line(axm, (np.deg2rad(f.yaw), np.deg2rad(f.pitch), np.deg2rad(f.roll)))
-    update_line(axr, (device_motion['rotation']['alpha'], device_motion['rotation']['beta'],
-                      device_motion['rotation']['gamma']))
+    update_line(axm, (f.yaw, -f.pitch, -f.roll))
+    update_line(axr, (np.rad2deg(alpha), np.rad2deg(beta), np.rad2deg(gamma)))
     plt.pause(0.001)
 
     plt.show(block=False)
@@ -120,20 +124,20 @@ async def handler(websocket, path):
     ax_map.set_xlabel("Alpha")
     ax_map.set_ylabel("Beta")
     ax_map.set_zlabel("Gamma")
-    ax_map.set_xlim3d([-8.0, 8.0])
-    ax_map.set_ylim3d([-8.0, 8.0])
-    ax_map.set_zlim3d([-8.0, 8.0])
-    ax_map.grid(False)
+    ax_map.set_xlim3d([-180, 180])
+    ax_map.set_ylim3d([-180, 180])
+    ax_map.set_zlim3d([-180, 180])
+    ax_map.grid(True)
     ax_map.set_title("Rotation measurement Kalman")
     axm, = ax_map.plot3D([0], [0], [0], marker='D', markersize=5, mec='y', mfc='r')
     ax_map = map.add_subplot(224, projection='3d')
     ax_map.set_xlabel("Alpha")
     ax_map.set_ylabel("Beta")
     ax_map.set_zlabel("Gamma")
-    ax_map.set_xlim3d([-8.0, 8.0])
-    ax_map.set_ylim3d([-8.0, 8.0])
-    ax_map.set_zlim3d([-8.0, 8.0])
-    ax_map.grid(False)
+    ax_map.set_xlim3d([-180, 180])
+    ax_map.set_ylim3d([-180, 180])
+    ax_map.set_zlim3d([-180, 180])
+    ax_map.grid(True)
     ax_map.set_title("Rotation measurement")
     axr, = ax_map.plot3D([0], [0], [0], marker='D', markersize=5, mec='y', mfc='r')
     print("Plot was initialized")
