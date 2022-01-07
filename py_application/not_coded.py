@@ -9,6 +9,7 @@ from utils import find_my_ip
 from matplotlib import pyplot as plt
 import numpy as np
 import kalman
+import time
 
 pp = pprint.PrettyPrinter(indent=2)
 
@@ -30,7 +31,7 @@ def print_xyz(measurement):
     return f"x: {measurement['x']:.3f}  y: {measurement['y']:.3f}  z: {measurement['z']:.3f}"
 
 
-def print_sensor_data(raw_bson_string, axa, axg, axm, axr, f):
+def print_sensor_data(raw_bson_string, axa, axg, axm, axr, f: kalman.Kalman):
     bson_data = bson.loads(raw_bson_string)
     print("\n\n\n\n")
     gyroscope = bson_data['gyroscope']
@@ -39,36 +40,43 @@ def print_sensor_data(raw_bson_string, axa, axg, axm, axr, f):
     magnetometer_uncalibrated = bson_data['magnetometerUncallibrated']
     device_motion = bson_data['deviceOrientationData']
 
-    if gyroscope is not None:
+    # if gyroscope is not None:
 
-        print(f"Gyroscope: {print_xyz(gyroscope)}")
-    else:
-        print(f"Gyroscope: disabled" + ' ' * 30)
+    #     print(f"Gyroscope: {print_xyz(gyroscope)}")
+    # else:
+    #     print(f"Gyroscope: disabled" + ' ' * 30)
 
-    if accelerometer is not None:
-        print(f"Accelerometer:  {print_xyz(accelerometer)}")
-    else:
-        print(f"Accelerometer: disabled" + ' ' * 30)
+    # if accelerometer is not None:
+    #     print(f"Accelerometer:  {print_xyz(accelerometer)}")
+    # else:
+    #     print(f"Accelerometer: disabled" + ' ' * 30)
 
-    if magnetometer is not None:
-        print(f"Magnetometer:  {print_xyz(magnetometer)}")
-    else:
-        print(f"Magnetometer: disabled" + ' ' * 30)
+    # if magnetometer is not None:
+    #     print(f"Magnetometer:  {print_xyz(magnetometer)}")
+    # else:
+    #     print(f"Magnetometer: disabled" + ' ' * 30)
 
-    if magnetometer_uncalibrated is not None:
-        print(f"Magnetometer (uncalibrated):  {print_xyz(magnetometer_uncalibrated)}")
-    else:
-        print(f"Magnetometer (uncalibrated): disabled" + ' ' * 0)
+    # if magnetometer_uncalibrated is not None:
+    #     print(f"Magnetometer (uncalibrated):  {print_xyz(magnetometer_uncalibrated)}")
+    # else:
+    #     print(f"Magnetometer (uncalibrated): disabled" + ' ' * 0)
 
     # nie chce mi sie tego pretty-printowac
 
     print("Device motion (raw data):")
     print(f"alpha = {device_motion['rotation']['alpha']}, beta = {device_motion['rotation']['beta']},"
           f" gamma = {device_motion['rotation']['gamma']}")
+
+    current_time = time.time()
+    dt = current_time - print_sensor_data.last_time
+    print_sensor_data.last_time = current_time
+
+    print(f"dt = {dt}")
+
     # Here I implemented data visualization
     f.computeAndUpdateRollPitchYaw(accelerometer['x'], accelerometer['y'], accelerometer['z'],
                                    gyroscope['x'], gyroscope['y'], gyroscope['z'],
-                                   magnetometer['x'], magnetometer['y'], magnetometer['z'], 0.05,
+                                   magnetometer['x'], magnetometer['y'], magnetometer['z'], dt,
                                    device_motion['rotation']['alpha'])
     print("Device motion kalman:")
     print(f"alpha = {np.deg2rad(f.yaw)}, beta = {np.deg2rad(f.pitch)}, gamma = {np.deg2rad(f.roll)}")
@@ -81,6 +89,7 @@ def print_sensor_data(raw_bson_string, axa, axg, axm, axr, f):
 
     plt.show(block=False)
     # pp.pprint(device_motion)
+print_sensor_data.last_time = time.time()
 
 
 async def handler(websocket, path):
