@@ -18,8 +18,8 @@ class Window:
         glTranslatef(0.0,0.0, -10)
 
         glLight(GL_LIGHT0, GL_POSITION,  (0, 0, 0, 1)) # point light from the left, top, front
-        glLightfv(GL_LIGHT0, GL_AMBIENT, (0.1, 0.1, 0.1, 1))
-        glLightfv(GL_LIGHT0, GL_DIFFUSE, (1, 1, 0.8, 1))
+        glLightfv(GL_LIGHT0, GL_AMBIENT, (0.2, 0.2, 0.2, 1))
+        glLightfv(GL_LIGHT0, GL_DIFFUSE, (1, 1, 0.5, 1))
 
         glEnable(GL_DEPTH_TEST)
 

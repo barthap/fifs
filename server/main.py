@@ -10,7 +10,10 @@ from graphics.model import Model3D
 from graphics.object import SceneObject
 from graphics.window import Window
 from kalman import Kalman
+from plot import setup_plot, update_line
 from utils import find_my_ip, rad_to_deg
+import matplotlib.pyplot as plt
+import numpy as np
 
 from OpenGL.GL import *
 from OpenGL.GLU import *
@@ -35,7 +38,7 @@ def signal_handler(sig, frame):
     sys.exit(0)
 
 
-def process_sensor_data(raw_bson_string):
+def process_sensor_data(raw_bson_string, axa, axg, axm, axr):
     bson_data = bson.loads(raw_bson_string)
     gyroscope = bson_data['gyroscope']
     accelerometer = bson_data['accelerometer']
@@ -63,9 +66,18 @@ def process_sensor_data(raw_bson_string):
     cube.set_rotation(Y, -alpha)
     cube.set_rotation(X, beta)
     cube.set_rotation(Z, -gamma)
+    # roll = 180 - fusion.roll if accelerometer['z'] > 0 else fusion.roll
     # cube.set_rotation(Y, -fusion.yaw)
     # cube.set_rotation(X, -fusion.pitch)
-    # cube.set_rotation(Z, fusion.roll)
+    # cube.set_rotation(Z, roll)
+
+    update_line(axa, (accelerometer['x'], accelerometer['y'], accelerometer['z']))
+    update_line(axg, (gyroscope['x'], gyroscope['y'], gyroscope['z']))
+    update_line(axm, (magnetometer['x'], magnetometer['y'], magnetometer['z']))
+    update_line(axr, (alpha, beta, gamma))
+    plt.pause(0.001)
+
+    plt.show(block=False)
 
 
 process_sensor_data.last_time = time.time()
@@ -74,8 +86,9 @@ process_sensor_data.last_time = time.time()
 async def handler(websocket, path):
     # for loop - receives sensor data until phone disconnects.
     print("A phone has connected")
+    _, axa, axg, axm, axr = setup_plot()
     async for sensor_data in websocket:
-        process_sensor_data(sensor_data)
+        process_sensor_data(sensor_data, axa, axg, axm, axr)
 
     print("\nPhone disconnected.")
 
