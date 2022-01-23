@@ -9,15 +9,17 @@ TODO
 ### Motion sensors
 
 The cross-platform [Expo SDK](https://expo.dev) APIs are used to gather sensor data from a mobile device:
+
 - [Gyroscope API](https://docs.expo.dev/versions/v43.0.0/sdk/gyroscope/)
 - [Accelerometer API](https://docs.expo.dev/versions/v43.0.0/sdk/accelerometer/)
 - [Magnetometer API](https://docs.expo.dev/versions/v43.0.0/sdk/magnetometer/) (both calibrated and uncalibrated)
 - [Device Motion API](https://docs.expo.dev/versions/v43.0.0/sdk/devicemotion/) - A more high-level API which outputs the sensor data already processed - it can be used for comparison with _our sensoric fusion_ results. It outputs the following:
+
   - Acceleration (both with and without gravity)
   - Device orietnation (in radians)
   - Device rotation speed
   - Screen orientation (portrait/landscape/upside down)
-  
+
   More info about the data can be found on the [API documentation page](https://docs.expo.dev/versions/v43.0.0/sdk/devicemotion/).
 
 ### To be continued
@@ -61,7 +63,7 @@ The cross-platform [Expo SDK](https://expo.dev) APIs are used to gather sensor d
 ### Running the WebSocket server for sensor data streaming
 
 1. Do the steps from above. Have your app open and `run_app.py` running
-1. In a separate console/terminal (don't close the previous one) run `server/main.py`, e.g.:
+1. In a separate console/terminal (don't close the previous one) run `server/base_template.py`, e.g.:
    ```
    cd server
    python main.py
@@ -89,5 +91,7 @@ The cross-platform [Expo SDK](https://expo.dev) APIs are used to gather sensor d
    Device motion (raw data):
    None
    ```
-1. Open `server/main.py` in your favourite editor/IDE and take a look at the `print_sensor_data()` - it contains everything you need.
+1. Open `server/base_template.py` in your favourite editor/IDE and take a look at the `print_sensor_data()` - it contains everything you need.
    > Currently, the mobile app is set up to send updates with 50ms interval, so this function is called 20 times a second.
+1. Stop the previous script. Inside `server` directory, run `main.py` to Run the OpenGL application along with some plots.
+   > NOTE: You need to click _Connect_ on the phone to get it working properly.
