@@ -66,8 +66,8 @@ async def handler(websocket, path):
   global file_handle
   file_handle = open('sensors_data.csv', 'w')
   field_names = ['t',
-    'acc_x', 'acc_y', 'acc_z',
     'gyro_x', 'gyro_y', 'gyro_z',
+    'acc_x', 'acc_y', 'acc_z',
     'mag_x', 'mag_y', 'mag_z',
     'mag_x_uncalibrated', 'mag_y_uncalibrated', 'mag_z_uncalibrated',
     'rot_alpha', 'rot_beta', 'rot_gamma'
