@@ -22,8 +22,6 @@ BLACK, RED = (0, 0, 0), (255, 128, 128)
 
 X, Y, Z = 0, 1, 2
 
-
-
 model = Model3D('models/iPhoneX.obj')
 cube = SceneObject(model)
 
@@ -62,19 +60,19 @@ def process_sensor_data(raw_bson_string, axa, axg, axm, axr):
     alpha = device_motion['rotation']['alpha']
     beta = device_motion['rotation']['beta']
     gamma = device_motion['rotation']['gamma']
-    alpha, beta, gamma = rad_to_deg(alpha), rad_to_deg(beta), rad_to_deg(gamma)
-    cube.set_rotation(Y, -alpha)
-    cube.set_rotation(X, beta)
-    cube.set_rotation(Z, -gamma)
-    # roll = 180 - fusion.roll if accelerometer['z'] > 0 else fusion.roll
-    # cube.set_rotation(Y, -fusion.yaw)
-    # cube.set_rotation(X, -fusion.pitch)
-    # cube.set_rotation(Z, roll)
+    # alpha, beta, gamma = rad_to_deg(alpha), rad_to_deg(beta), rad_to_deg(gamma)
+    # cube.set_rotation(Y, -alpha)
+    # cube.set_rotation(X, beta)
+    # cube.set_rotation(Z, -gamma)
+    roll = 180 - fusion.roll if accelerometer['z'] > 0 else fusion.roll
+    cube.set_rotation(Y, -fusion.yaw)
+    cube.set_rotation(X, -fusion.pitch)
+    cube.set_rotation(Z, roll)
 
-    update_line(axa, (accelerometer['x'], accelerometer['y'], accelerometer['z']))
-    update_line(axg, (gyroscope['x'], gyroscope['y'], gyroscope['z']))
-    update_line(axm, (magnetometer['x'], magnetometer['y'], magnetometer['z']))
-    update_line(axr, (alpha, beta, gamma))
+    # update_line(axa, (accelerometer['x'], accelerometer['y'], accelerometer['z']))
+    # update_line(axg, (gyroscope['x'], gyroscope['y'], gyroscope['z']))
+    # update_line(axm, (magnetometer['x'], magnetometer['y'], magnetometer['z']))
+    # update_line(axr, (alpha, beta, gamma))
     plt.pause(0.001)
 
     plt.show(block=False)

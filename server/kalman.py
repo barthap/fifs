@@ -19,23 +19,23 @@ class Kalman:
         self.currentRollState = np.vstack((0.0, 0.0))  # updates
         self.roll = 0  # updates
         self.rollCovariance = np.zeros((2, 2))  # updates
-        self.rollError = 0.001
-        self.rollDriftError = 0.003
-        self.rollMeasurementError = 0.03
+        self.rollError = 0.000001
+        self.rollDriftError = 0.3
+        self.rollMeasurementError = 0.00001
 
         self.currentPitchState = np.vstack((0.0, 0.0))  # updates
         self.pitch = 0  # updates
         self.pitchCovariance = np.zeros((2, 2))  # updates
-        self.pitchError = 0.001
-        self.pitchDriftError = 0.003
-        self.pitchMeasurementError = 0.03
+        self.pitchError = 0.0000001
+        self.pitchDriftError = 0.3
+        self.pitchMeasurementError = 0.000012
 
         self.currentYawState = np.vstack((0.0, 0.0))  # updates
         self.yaw = 0  # updates
         self.yawCovariance = np.zeros((2, 2))  # updates
-        self.yawError = 0.001
-        self.yawDriftError = 0.003
-        self.yawMeasurementError = 0.03
+        self.yawError = 0.01
+        self.yawDriftError = 0.3
+        self.yawMeasurementError = 0.000014
 
     def computeAndUpdateRollPitchYaw(self, ax, ay, az, gx, gy, gz, mx, my, mz, dt, da):
         """
