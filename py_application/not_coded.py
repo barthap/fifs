@@ -156,6 +156,7 @@ async def handler(websocket, path):
         print_sensor_data(sensor_data, axa, axg, axm, axr, f)
 
     print("\nPhone disconnected.")
+    plt.close('all')
 
 
 async def main():

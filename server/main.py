@@ -69,10 +69,10 @@ def process_sensor_data(raw_bson_string, axa, axg, axm, axr):
     cube.set_rotation(X, -fusion.pitch)
     cube.set_rotation(Z, roll)
 
-    # update_line(axa, (accelerometer['x'], accelerometer['y'], accelerometer['z']))
-    # update_line(axg, (gyroscope['x'], gyroscope['y'], gyroscope['z']))
-    # update_line(axm, (magnetometer['x'], magnetometer['y'], magnetometer['z']))
-    # update_line(axr, (alpha, beta, gamma))
+    update_line(axa, (accelerometer['x'], accelerometer['y'], accelerometer['z']))
+    update_line(axg, (gyroscope['x'], gyroscope['y'], gyroscope['z']))
+    update_line(axm, (magnetometer['x'], magnetometer['y'], magnetometer['z']))
+    update_line(axr, (alpha, beta, gamma))
     plt.pause(0.001)
 
     plt.show(block=False)
